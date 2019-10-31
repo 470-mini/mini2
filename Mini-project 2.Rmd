@@ -1,0 +1,54 @@
+---
+title: "Mini Project 2"
+author: "Entong Li, Zijia Cao, Jingyu Xie, Xindi Lu"
+date: "10/31/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+load("CCES16_Common_OUTPUT_Feb2018_VV.RData")
+library(gapminder)
+library(dplyr)
+library(tidyverse)
+variables <- c("CC16_326", "CC16_410a", "commonweight_vv_post", "tookpost","gender","educ","race","pid7", "CC16_331_1","CC16_331_2","CC16_331_3","CC16_331_7")
+```
+
+# 1. Creating the data frame used in exploration:
+
+```{r}
+obama <- x[variables] %>%
+  filter(CC16_326 == "Barack Obama", tookpost == "Yes")
+obama$vote.T <- ifelse(obama$CC16_410a == "Donald Trump (Republican)", 1,0)
+
+#For CC16_331_1 and CC16_331_3, "Yes" is a pro-immigration response.
+for (i in c(9,11)){
+  obama[i] <- ifelse(obama[i] == "Yes", 1 , 0)
+}
+
+#For CC16_331_2 and CC16_331_7, "No" is a pro-immigration response.
+for (i in c(10,12)){
+  obama[i] <- ifelse(obama[i] == "No", 1 , 0)
+}
+
+#Level of pro-immigration: 4 is the most, 0 is the lease.
+obama$immig.at <- obama$CC16_331_1 + obama$CC16_331_2 + obama$CC16_331_3 + obama$CC16_331_7
+
+#Recode the race to four levels.
+obama$race <- recode(obama$race,"White" = "White", "Black" = "Black", "Hispanic" = "Hispanci", .default = "Other")
+
+#Recode the party identification to numeric variables:
+#Strong to Lean Democrat: 3 to 1;
+#Strong to Lean Republican: -3 to -1;
+#Independent and others: 0
+obama$pid7 <- recode(obama$pid7, "Strong Democrat" = 3, "Not very strong Democrat" = 2, "Lean Democrat" = 1, "Strong Republican" = -3, "Not very strong Republican" = -2, "Lean Republican" = -1, .default = 0)
+
+#Recode the education level to numeric variables:
+#The higer value means higher education level, from 1-6.
+#Skipped and Not Asked will be 0.
+obama$educ <- recode(obama$educ, "No HS" = 1, "High school graduate" = 2, "Some college" = 3, "2-year" = 4, "4-year" = 5, "Post-grad" = 6, .default = 0)
+
+```
+
+
+# 2.
