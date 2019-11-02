@@ -52,3 +52,28 @@ obama$educ <- recode(obama$educ, "No HS" = 1, "High school graduate" = 2, "Some 
 
 
 # 2.
+
+```{r}
+obama.weighted.logit = glm(vote.T ~ immig.at, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+
+our.logit = function(x){
+  coe = coef(obama.weighted.logit)
+  y = coe[1] + coe[2] * x
+  return(exp(y) / (1 + exp(y)))
+}
+
+immig.race.1 = glm(vote.T ~ immig.at + race, family = binomial, data = obama)
+immig.race.2 = glm(vote.T ~ immig.at + race + immig.at:race, family = binomial, data = obama)
+
+
+immig.party.1 = glm(vote.T ~ immig.at + pid7, family = binomial, data = obama)
+immig.party.2 = glm(vote.T ~ immig.at + pid7 + immig.at:pid7, family = binomial, data = obama)
+
+
+
+ggplot(obama, aes(immig.at, vote.T)) + geom_jitter(height = 0.2, width = 0.3) + geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) + stat_function(fun = our.logit, color = "orange") + xlab("Immigration Attitudes") + ylab("Obama-to-Trump Switching")
+
+
+
+
+```
