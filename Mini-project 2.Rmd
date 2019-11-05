@@ -37,7 +37,7 @@ for (i in c(10,12)){
 obama$immig.at <- as.numeric(obama$CC16_331_1 + obama$CC16_331_2 + obama$CC16_331_3 + obama$CC16_331_7)
 
 #Recode the race to four levels.
-obama$race <- recode(obama$race,"White" = "White", "Black" = "Black", "Hispanic" = "Hispanic", .default = "Other")
+obama$race <- recode_factor(obama$race,"White" = "White", "Black" = "Black", "Hispanic" = "Hispanic", .default = "Other")
 
 #Recode the party identification to numeric variables:
 #Strong to Lean Democrat: 3 to 1;
