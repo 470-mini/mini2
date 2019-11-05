@@ -12,6 +12,7 @@ library(gapminder)
 library(dplyr)
 library(tidyverse)
 library(GGally)
+cb_palette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 variables <- c("CC16_326", "CC16_410a", "commonweight_vv_post", "tookpost","gender","educ","race","pid7", "CC16_331_1","CC16_331_2","CC16_331_3","CC16_331_7")
 ```
 
@@ -36,7 +37,7 @@ for (i in c(10,12)){
 obama$immig.at <- as.numeric(obama$CC16_331_1 + obama$CC16_331_2 + obama$CC16_331_3 + obama$CC16_331_7)
 
 #Recode the race to four levels.
-obama$race <- recode(obama$race,"White" = "White", "Black" = "Black", "Hispanic" = "Hispanci", .default = "Other")
+obama$race <- recode(obama$race,"White" = "White", "Black" = "Black", "Hispanic" = "Hispanic", .default = "Other")
 
 #Recode the party identification to numeric variables:
 #Strong to Lean Democrat: 3 to 1;
@@ -77,7 +78,7 @@ gender.df = expand.grid(immig.at = 0:4, gender = factor(c("Male","Female")))
 gender.pred = predict(immig.gender.2, type = "response", newdata =gender.df )
 gender.pred.df = data.frame(gender.df, vote.T.prob = as.vector(gender.pred))
 ggplot(gender.pred.df, aes(x = immig.at, y = vote.T.prob, group = gender, color = gender)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump")
-ggplot(gender.pred.df, aes(x = gender, y = vote.T.prob, group = immig.at, color = immig.at)) + geom_line() + labs("Immigration attitude") + ylab("Probability of voting Donald Trump")
+ggplot(gender.pred.df, aes(x = gender, y = vote.T.prob, group = immig.at, color = immig.at)) + geom_line() + labs(color = "Immigration attitude") + ylab("Probability of voting Donald Trump")
 
 
 
@@ -85,23 +86,35 @@ ggplot(gender.pred.df, aes(x = gender, y = vote.T.prob, group = immig.at, color 
 #Immigration attitude with education level:
 immig.educ.1 = glm(vote.T ~ immig.at + educ, family = quasibinomial, weights = commonweight_vv_post, data = obama)
 immig.educ.2 = glm(vote.T ~ immig.at * educ, family = quasibinomial, weights = commonweight_vv_post, data = obama)
-
+summary(immig.educ.1)
+summary(immig.educ.2)
+educ.df = expand.grid(immig.at = 0:4, educ = 1:6)
+educ.pred = predict(immig.educ.2, type = "response", newdata =educ.df )
+educ.pred.df = data.frame(educ.df, vote.T.prob = as.vector(educ.pred))
+ggplot(educ.pred.df, aes(x = immig.at, y = vote.T.prob, group = educ, color = educ)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + labs(color = "education level")
+ggplot(educ.pred.df, aes(x = educ, y = vote.T.prob, group = immig.at, color = immig.at)) + geom_line() + labs(color = "Immigration attitude") + ylab("Probability of voting Donald Trump")
 
 
 #Immigration attitude with race:
 immig.race.1 = glm(vote.T ~ immig.at + race, family = quasibinomial, weights = commonweight_vv_post, data = obama)
 immig.race.2 = glm(vote.T ~ immig.at * race , family = quasibinomial, weights = commonweight_vv_post, data = obama)
-
+summary(immig.race.1)
+summary(immig.race.2)
+race.df = expand.grid(immig.at = 0:4, race = factor(c("White","Black","Hispanic","Other")))
+race.pred = predict(immig.race.2, type = "response", newdata =race.df )
+race.pred.df = data.frame(race.df, vote.T.prob = as.vector(race.pred))
+ggplot(race.pred.df, aes(x = immig.at, y = vote.T.prob, group = race, color = race)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") 
+ggplot(race.pred.df, aes(x = race, y = vote.T.prob, group = immig.at, color = immig.at)) + geom_line() + labs(color = "Immigration attitude") + ylab("Probability of voting Donald Trump")
 
 #Immigration attitude with party:
 immig.party.1 = glm(vote.T ~ immig.at + pid7, family = quasibinomial, weights = commonweight_vv_post, data = obama)
 immig.party.2 = glm(vote.T ~ immig.at * pid7 , family = quasibinomial, weights = commonweight_vv_post, data = obama)
-
-
-
-# ggplot(obama, aes(immig.at, vote.T)) + geom_jitter(height = 0.2, width = 0.3) + geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) + stat_function(fun = our.logit, color = "orange") + xlab("Immigration Attitudes") + ylab("Obama-to-Trump Switching")
-
-
-
+summary(immig.party.1)
+summary(immig.party.2)
+party.df = expand.grid(immig.at = 0:4, pid7 = -3:3)
+party.pred = predict(immig.party.2, type = "response", newdata =party.df )
+party.pred.df = data.frame(party.df, vote.T.prob = as.vector(party.pred))
+ggplot(party.pred.df, aes(x = immig.at, y = vote.T.prob, group = pid7, color = pid7)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") 
+ggplot(party.pred.df, aes(x = pid7, y = vote.T.prob, group = immig.at, color = immig.at)) + geom_line() + labs(color = "Immigration attitude") + ylab("Probability of voting Donald Trump")
 
 ```
