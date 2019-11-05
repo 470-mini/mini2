@@ -11,6 +11,7 @@ load("CCES16_Common_OUTPUT_Feb2018_VV.RData")
 library(gapminder)
 library(dplyr)
 library(tidyverse)
+library(GGally)
 variables <- c("CC16_326", "CC16_410a", "commonweight_vv_post", "tookpost","gender","educ","race","pid7", "CC16_331_1","CC16_331_2","CC16_331_3","CC16_331_7")
 ```
 
@@ -32,7 +33,7 @@ for (i in c(10,12)){
 }
 
 #Level of pro-immigration: 4 is the most, 0 is the lease.
-obama$immig.at <- obama$CC16_331_1 + obama$CC16_331_2 + obama$CC16_331_3 + obama$CC16_331_7
+obama$immig.at <- as.numeric(obama$CC16_331_1 + obama$CC16_331_2 + obama$CC16_331_3 + obama$CC16_331_7)
 
 #Recode the race to four levels.
 obama$race <- recode(obama$race,"White" = "White", "Black" = "Black", "Hispanic" = "Hispanci", .default = "Other")
@@ -48,13 +49,18 @@ obama$pid7 <- recode(obama$pid7, "Strong Democrat" = 3, "Not very strong Democra
 #Skipped and Not Asked will be 0.
 obama$educ <- recode(obama$educ, "No HS" = 1, "High school graduate" = 2, "Some college" = 3, "2-year" = 4, "4-year" = 5, "Post-grad" = 6, .default = 0)
 
+
+#Recode the gender into three groups: Male, Female, Unknown(Skipped and Not asked)
+obama$gender <- recode_factor(obama$gender, "Male" = "Male", "Female" = "Female", .default = "Unknown")
 ```
 
 
 # 2.
 
+
+
 ```{r}
-obama.weighted.logit = glm(vote.T ~ immig.at, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+#obama.weighted.logit = glm(vote.T ~ immig.at, family = quasibinomial, weights = commonweight_vv_post, data = obama)
 
 our.logit = function(x){
   coe = coef(obama.weighted.logit)
@@ -62,16 +68,38 @@ our.logit = function(x){
   return(exp(y) / (1 + exp(y)))
 }
 
-immig.race.1 = glm(vote.T ~ immig.at + race, family = binomial, data = obama)
-immig.race.2 = glm(vote.T ~ immig.at + race + immig.at:race, family = binomial, data = obama)
+#Immigration attitude with gender:
+immig.gender.1 = glm(vote.T ~ immig.at + gender, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+immig.gender.2 = glm(vote.T ~ immig.at * gender, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+summary(immig.gender.1)
+summary(immig.gender.2)
+gender.df = expand.grid(immig.at = 0:4, gender = factor(c("Male","Female")))
+gender.pred = predict(immig.gender.2, type = "response", newdata =gender.df )
+gender.pred.df = data.frame(gender.df, vote.T.prob = as.vector(gender.pred))
+ggplot(gender.pred.df, aes(x = immig.at, y = vote.T.prob, group = gender, color = gender)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump")
+ggplot(gender.pred.df, aes(x = gender, y = vote.T.prob, group = immig.at, color = immig.at)) + geom_line() + labs("Immigration attitude") + ylab("Probability of voting Donald Trump")
 
 
-immig.party.1 = glm(vote.T ~ immig.at + pid7, family = binomial, data = obama)
-immig.party.2 = glm(vote.T ~ immig.at + pid7 + immig.at:pid7, family = binomial, data = obama)
+
+
+#Immigration attitude with education level:
+immig.educ.1 = glm(vote.T ~ immig.at + educ, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+immig.educ.2 = glm(vote.T ~ immig.at * educ, family = quasibinomial, weights = commonweight_vv_post, data = obama)
 
 
 
-ggplot(obama, aes(immig.at, vote.T)) + geom_jitter(height = 0.2, width = 0.3) + geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) + stat_function(fun = our.logit, color = "orange") + xlab("Immigration Attitudes") + ylab("Obama-to-Trump Switching")
+#Immigration attitude with race:
+immig.race.1 = glm(vote.T ~ immig.at + race, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+immig.race.2 = glm(vote.T ~ immig.at * race , family = quasibinomial, weights = commonweight_vv_post, data = obama)
+
+
+#Immigration attitude with party:
+immig.party.1 = glm(vote.T ~ immig.at + pid7, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+immig.party.2 = glm(vote.T ~ immig.at * pid7 , family = quasibinomial, weights = commonweight_vv_post, data = obama)
+
+
+
+# ggplot(obama, aes(immig.at, vote.T)) + geom_jitter(height = 0.2, width = 0.3) + geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) + stat_function(fun = our.logit, color = "orange") + xlab("Immigration Attitudes") + ylab("Obama-to-Trump Switching")
 
 
 
