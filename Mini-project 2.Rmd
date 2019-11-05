@@ -43,7 +43,7 @@ obama$race <- recode(obama$race,"White" = "White", "Black" = "Black", "Hispanic"
 #Strong to Lean Democrat: 3 to 1;
 #Strong to Lean Republican: -3 to -1;
 #Independent and others: 0
-obama$pid7 <- recode(obama$pid7, "Strong Democrat" = 3, "Not very strong Democrat" = 2, "Lean Democrat" = 1, "Strong Republican" = -3, "Not very strong Republican" = -2, "Lean Republican" = -1, .default = 0)
+obama$pid7 <- recode_factor(obama$pid7, "Strong Democrat" = "Strong Democrat", "Not very strong Democrat" = "Not very strong Democrat", "Lean Democrat" = "Lean Democrat", "Strong Republican" = "Strong Republican", "Not very strong Republican" = "Not very strong Republican", "Lean Republican" = "Lean Republican", .default = "Other")
 
 #Recode the education level to numeric variables:
 #The higer value means higher education level, from 1-6.
@@ -111,10 +111,10 @@ immig.party.1 = glm(vote.T ~ immig.at + pid7, family = quasibinomial, weights = 
 immig.party.2 = glm(vote.T ~ immig.at * pid7 , family = quasibinomial, weights = commonweight_vv_post, data = obama)
 summary(immig.party.1)
 summary(immig.party.2)
-party.df = expand.grid(immig.at = 0:4, pid7 = -3:3)
+party.df = expand.grid(immig.at = 0:4, pid7 = factor(c("Strong Democrat", "Not very strong Democrat", "Lean Democrat", "Strong Republican",  "Not very strong Republican", "Lean Republican",  "Other")))
 party.pred = predict(immig.party.2, type = "response", newdata =party.df )
 party.pred.df = data.frame(party.df, vote.T.prob = as.vector(party.pred))
-ggplot(party.pred.df, aes(x = immig.at, y = vote.T.prob, group = pid7, color = pid7)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") 
+ggplot(party.pred.df, aes(x = immig.at, y = vote.T.prob, group = pid7, color = pid7)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + labs(color = "Party")
 ggplot(party.pred.df, aes(x = pid7, y = vote.T.prob, group = immig.at, color = immig.at)) + geom_line() + labs(color = "Immigration attitude") + ylab("Probability of voting Donald Trump")
 
 ```
