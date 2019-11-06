@@ -118,3 +118,13 @@ ggplot(party.pred.df, aes(x = immig.at, y = vote.T.prob, group = pid7, color = p
 ggplot(party.pred.df, aes(x = pid7, y = vote.T.prob, group = immig.at, color = immig.at)) + geom_line() + labs(color = "Immigration attitude") + ylab("Probability of voting Donald Trump")
 
 ```
+
+The immigration attitude doesn't interact with gender. Because the plot shows that the slope for male and female don¡¯t have very obvious differences.  \n
+
+The immigration attitudes interact with educational level. Because we ca see from the graph that for people who have the highest level of immigration level, there exists a positive relationship between educational level and voting probability for Donald trump. However, for people who have immigration levels lower than 4, they tend to have a negative relationship between educational level and voting probability. In other words, immigration level influences the educational group differently. In conclusion, immigration level and educational level have an interaction. \n
+
+The immigration attitude interacts with the race. From the plot grouped by the race, it's obvious to see that different races have voting probability with much different slopes. Throughout these four races, White people who have lower immigration attitudes will more likely to vote for Donald Trump, but the slope of the relationship between immigration attitudes and voting probability drops the most among all four slopes. For Hispanic and other people, they tend to have similar slopes but flatter than the slope for White people. For the Black people, regardless of their immigration attitudes, they always keep the lowest voting probability for Donald Trump. It means that the slope for Black people is much flatter than others. Therefore, immigration attitudes apparently affect the race group in different ways, and hence immigration attitudes and race exist interactions. \n
+
+The immigration attitude doesn't interact with party. From the plot grouped by party, although the strong Democrat party seems have a slope slightly different from others, but all other curves keep relatively the similar slope. Thus, we don't have enough evidence to show that they have an interaction. \n
+
+
