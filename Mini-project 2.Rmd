@@ -139,3 +139,51 @@ ggplot(party.pred.df, aes(x = pid7, y = vote.T.prob, group = immig.at, color = i
 The immigration attitude doesn't interact with party. From the plot grouped by party, although the strong Democrat party seems have a slope slightly different from others, but all other curves keep relatively the similar slope. Thus, we don't have enough evidence to show that they have an interaction. \n
 
 
+#3
+
+
+```{r}
+#creating a test dataset
+
+test<-obama
+test$race2 <- recode(obama$race, White = "White", Black = "Black", Hispanic = "Hispanic", .default = "Other") 
+test$educ2 <- as.numeric(test$educ)
+test$pid72 <- as.numeric(test$pid7)
+test$gender2 <- as.numeric(test$gender)
+test$race2 <- as.numeric(test$race2)
+test$switching <- ifelse(obama$CC16_326 == 'Barack Obama' & obama$CC16_410a == 'Donald Trump (Republican)', 1, 0)
+test <- test[!is.na(test$switching), ]
+```
+
+
+```{r}
+
+model1 <- glm(switching ~ race2 + pid72 + educ2 + gender2, family = binomial(link='logit'), data = test, weights = commonweight_vv_post)
+summary(model1)
+
+model2 <- glm(switching ~ immig.at + race2 + pid72 + educ2 + gender2, family = binomial(link='logit'), data = test, weights = commonweight_vv_post)
+summary(model2)
+
+# include interactions as necessary
+model2.1 <- glm(switching ~ immig.at + race2 + pid72 + educ2 + gender2 + immig.at * race2 + immig.at * educ2, family = binomial(link='logit'), data = test, weights = commonweight_vv_post)
+summary(model2.1)
+
+```
+
+
+```{r}
+group1 <- data.frame(race2 = 1, pid72 = 7, educ2 = 1, gender2 = 1, immig.at = 0) # white strong republican no high school male 
+predict(model1, newdata = group1, type = "response")
+predict(model2, newdata = group1, type = "response")
+predict(model2.1, newdata = group1, type = "response")
+```
+
+
+```{r}
+group2 <- data.frame(race2 = 3, pid72 = 1, educ2 = 6, gender2 = 2, immig.at = 4) 
+# hispanic， strong democrat， Post-grad， female 
+predict(model1, newdata = group2, type = "response")
+predict(model2, newdata = group2, type = "response")
+predict(model2.1, newdata = group2, type = "response")
+```
+
