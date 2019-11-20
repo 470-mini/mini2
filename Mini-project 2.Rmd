@@ -217,6 +217,8 @@ party.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = pid7)) + 
 grid.arrange(party.with, party.wout, nrow = 1)
 ```
 
+The immigration attitude does make some difference when talking about gender. From the plot with immigration attitude, male has higher probability of voting to Trump, while we can not see this gender gap in the plot without immigration attitude. The immigration attitude does not make a substantive difference when talking about race. For education, the plot with immigration attitude converges than the one without immigration attitude. The plot with immigration attitude has higher range of probability of voting to Trump compared to the one without. Gender and education matter much than other two groups.
+
 
 
 ```{r}
