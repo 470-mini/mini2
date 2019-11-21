@@ -175,7 +175,7 @@ The immigration attitude interacts with party.  In the model with interaction wi
 
 # Step 3:
 
-The coefficients from the model without immigration attitude:
+### The coefficients from the model without immigration attitude:
 
 ```{r}
 library(arm)
@@ -184,7 +184,7 @@ display(model1)
 ```
 
 
-The coefficients from the model with immigration attitude:
+### The coefficients from the model with immigration attitude:
 
 ```{r}
 model2 <- glm(vote.T ~ immig.at + race + pid7 + educ + gender + immig.at:race + immig.at:educ + immig.at:pid7, family = 'binomial', data = obama, weights = commonweight_vv_post)
@@ -235,7 +235,7 @@ e.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = educ, color =
 grid.arrange(e.1,e.2, nrow =1)
 ```
 
-For model with variable education, adding immigration attitude does make a substantive difference. The plot shows that without immigration attitude, there exist relatively larger gaps in probabilities between each educational levels. After including immigration attitude in the model, the differences of probabilities between various educational levels become smaller than before.
+For model with variable education, adding immigration attitude does make a substantive difference. The plot shows that without immigration attitude, there exist relatively larger gaps in density of probability between each educational levels. After including immigration attitude in the model, the differences of probabilities between various educational levels become smaller than before.
 
 ### Party:
 
@@ -247,9 +247,9 @@ ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = pid7, color = pid7)
 
 From the plot, we could see that the immigration attitude does make a substantive difference when talking about party. It's obvious to find that for parties like Strong Democrat and Lean Democrat ,their probabilities of voting to Donald Trump shrink a lot when including immigration attitude in the model. 
 
-Overall, including immigration attitudes make a substantive difference in demographic groups: gender, education level, and party. For these three demographic groups, immigration attitude seems to have the same level of effect on them.
+Overall, including immigration attitudes make a substantive difference in demographic groups: gender, education level, and party. For these three demographic groups, immigration attitude seems to affect the party more than other two demographic variables.
 
 
 # Conclusion:
 
-The attitudes toward immigration explain the probability of switching of votes of 2012 Obama supporters who became 2016 Trump supporters within the demographic groups: gender, education level, and party. 
+The attitudes toward immigration explain the probability of switching of votes of 2012 Obama supporters who became 2016 Trump supporters with the demographic groups: gender, education level, and party. Higher level of immigration attitude will have lower probability of switching of votes, no matter which group of gender, education level, or party the investigatior belongs. Within the demographic categories, different groups will have different decrease rate. 
