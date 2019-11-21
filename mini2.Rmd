@@ -215,7 +215,7 @@ g.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = gender, color
 grid.arrange(g.1,g.2,nrow = 1)
 ```
 
-The immigration attitude does make some difference when talking about gender. From the plot with immigration attitude, male has a higher probability of voting to Trump than female, and the probability for male is so close to 0.25. However, in the plot without immigration attitude, male and female seem to have the same probability of voting to Donald Trump, and the probability for male without immigration attitude is slightly lower than the probability with immigration attitude.
+The immigration attitude does make some difference when talking about gender. In the density plot without immigration attitude, lines for male and female seem to be overlapped which means that they tend to have the same probability of voting to Donald Trump. However, from the plot with immigration attitude, the line for male deviates from the line for women. In other words, taking immigration attitude into consideration results in some changes in probability of voting to Donald Trump between different gender.
 
 ### Race:
 
@@ -225,7 +225,7 @@ r.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = race, color =
 grid.arrange(r.1, r.2, nrow = 1)
 ```
 
-The immigration attitude does not make a substantive difference when talking about race. It seems like the probability of voting to Donald trump for four different races doesn't change a lot.
+The immigration attitude does not make a substantive difference when talking about race. From the density graph, it seems like the overall shape for probability of voting to Donald trump for all four races doesn't change a lot when we add immigration attitude in the model.
 
 ### Education level:
 
@@ -235,18 +235,17 @@ e.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = educ, color =
 grid.arrange(e.1,e.2, nrow =1)
 ```
 
-For education, the plot with immigration attitude converges than the one without immigration attitude. The plot with immigration attitude has higher range of probability of voting to Trump compared to the one without. 
+For model with variable education, adding immigration attitude does make a substantive difference. The plot shows that without immigration attitude, there exist relatively larger gaps in probabilities between each educational levels. After including immigration attitude in the model, the differences of probabilities between various educational levels become smaller than before.
 
 ### Party:
 
 ```{r,fig.width=7}
-p.1<- ggplot(data = with.img.pred.df, aes(x = vote.T.prob, group = pid7, color = pid7)) + geom_density() + ggtitle("With immigration\nattitude") + ylab("Density") + xlab("Probability of voting\nto Donald Trump") + ylim(0,35)
-p.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = pid7, color = pid7)) + geom_density() + ggtitle("Without immigration\nattitude") + ylab("Density")+ xlab("Probability of voting\nto Donald Trump")+ ylim(0,35)
-grid.arrange(p.1, p.2, nrow = 1)
+ggplot(data = with.img.pred.df, aes(x = vote.T.prob, group = pid7, color = pid7)) + geom_density() + ggtitle("With immigration\nattitude") + ylab("Density") + xlab("Probability of voting\nto Donald Trump") + ylim(0,35)
+ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = pid7, color = pid7)) + geom_density() + ggtitle("Without immigration\nattitude") + ylab("Density")+ xlab("Probability of voting\nto Donald Trump")+ ylim(0,35)
 ```
 
 
-From the plot, we could see that the immigration attitude does make a substantive difference when talking about party. The median for probability of voting to Donald Trump may not change drastically when taking the immigration attitude into consideration but the range for the probabilities in all seven parties expand a lot.
+From the plot, we could see that the immigration attitude does make a substantive difference when talking about party. It's obvious to find that for parties like Strong Democrat and Lean Democrat ,their probabilities of voting to Donald Trump shrink a lot when including immigration attitude in the model. 
 
 Overall, including immigration attitudes make a substantive difference in demographic groups: gender, education level, and party. For these three demographic groups, immigration attitude seems to have the same level of effect on them.
 
