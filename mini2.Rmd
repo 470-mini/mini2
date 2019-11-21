@@ -1,0 +1,251 @@
+---
+title: "Mini-Project 2"
+author: "Entong Li, Zijia Cao, Xindi Lu, Jingyu Xie"
+date: "11/20/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 5)
+load("CCES16_Common_OUTPUT_Feb2018_VV.RData")
+library(gapminder)
+library(dplyr)
+library(tidyverse)
+library(GGally)
+library(gridExtra)
+cb_palette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbp <- function(x) scale_color_manual(values = cb_palette)
+variables <- c("CC16_326", "CC16_410a", "commonweight_vv_post", "tookpost","gender","educ","race","pid7", "CC16_331_1","CC16_331_2","CC16_331_3","CC16_331_7")
+```
+
+# Introduction:
+
+## Research Question:
+
+To what extent do attitudes toward immigration explain the switching of votes of 2012 Obama supporters who became 2016 Trump supporters?
+
+### Exploration steps:
+
+1. Clean the data, only include the people who took both tests and vote to Obama in 2012.
+
+2. As all demographic variables are meaningful and should be included in the model, find out the which demographic variables will interact with immigration attitude, then add the interaction term in the model.
+
+3. Fit two models: one include immigration attitude, another doesn't, find out that whether the probability of switching votes for selected demographic variables will be affected by the immigration attitude. 
+
+## Data Description:
+
+We'll use the 2016 Cooperative Congressional Election Study, which is a national survey that colllects the responses of 64,600 investigators of the same set of questions before and after the election, but not all investigtor who already done the pre-investigation will do the post one. The dataset could be accessed from: http://cces.gov.harvard.edu/data.
+
+### Data cleaning:
+
+As we want to know about the switching of the votes from Obama to Trump, we will only include the investigators who took the post-election survey, and who voted to Obama in 2012. Overall, the dataset we used to explore will only have 23,395 observations. 
+
+# Step 1 & Step 2:
+
+
+```{r}
+obama <- x[variables] %>%
+  filter(CC16_326 == "Barack Obama", tookpost == "Yes")
+obama$vote.T <- ifelse(obama$CC16_410a == "Donald Trump (Republican)", 1,0)
+
+#For CC16_331_1 and CC16_331_3, "Yes" is a pro-immigration response.
+for (i in c(9,11)){
+  obama[i] <- ifelse(obama[i] == "Yes", 1 , 0)
+}
+
+#For CC16_331_2 and CC16_331_7, "No" is a pro-immigration response.
+for (i in c(10,12)){
+  obama[i] <- ifelse(obama[i] == "No", 1 , 0)
+}
+
+#Level of pro-immigration: 4 is the most, 0 is the lease.
+obama$immig.at <- as.numeric(obama$CC16_331_1 + obama$CC16_331_2 + obama$CC16_331_3 + obama$CC16_331_7)
+
+#Recode the race to four levels.
+obama$race <- recode_factor(obama$race,"White" = "White", "Black" = "Black", "Hispanic" = "Hispanic", .default = "Other")
+
+#Recode the party identification to numeric variables:
+#Strong to Lean Democrat: 3 to 1;
+#Strong to Lean Republican: -3 to -1;
+#Independent and others: 0
+obama$pid7 <- recode_factor(obama$pid7, "Strong Democrat" = "Strong Democrat", "Not very strong Democrat" = "Not very strong Democrat", "Lean Democrat" = "Lean Democrat", "Strong Republican" = "Strong Republican", "Not very strong Republican" = "Not very strong Republican", "Lean Republican" = "Lean Republican", .default = "Other")
+
+#Recode the education level to numeric variables:
+#The higer value means higher education level, from 1-6.
+#Skipped and Not Asked will be 0.
+obama$educ <- recode(obama$educ, "No HS" = 1, "High school graduate" = 2, "Some college" = 3, "2-year" = 4, "4-year" = 5, "Post-grad" = 6, .default = 0)
+
+
+#Recode the gender into three groups: Male, Female, Unknown(Skipped and Not asked)
+obama$gender <- recode_factor(obama$gender, "Male" = "Male", "Female" = "Female", .default = "Unknown")
+```
+
+### Immigration attitude with gender:
+
+```{r}
+
+our.logit = function(x){
+  coe = coef(obama.weighted.logit)
+  y = coe[1] + coe[2] * x
+  return(exp(y) / (1 + exp(y)))
+}
+
+#Immigration attitude with gender:
+immig.gender.1 = glm(vote.T ~ immig.at + gender, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+immig.gender.2 = glm(vote.T ~ immig.at * gender, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+gender.df.1 = expand.grid(immig.at = 0:4, gender = factor(c("Male","Female")))
+gender.pred.1 = predict(immig.gender.1, type = "response", newdata =gender.df.1 )
+gender.pred.df.1 = data.frame(gender.df.1, vote.T.prob = as.vector(gender.pred.1))
+gender.1<- ggplot(gender.pred.df.1, aes(x = immig.at, y = vote.T.prob, group = gender, color = gender)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + ggtitle("Without interaction\nwith gender")
+gender.df.2 = expand.grid(immig.at = 0:4, gender = factor(c("Male","Female")))
+gender.pred.2 = predict(immig.gender.2, type = "response", newdata =gender.df.2 )
+gender.pred.df.2 = data.frame(gender.df.2, vote.T.prob = as.vector(gender.pred.2))
+gender.2 <- ggplot(gender.pred.df.2, aes(x = immig.at, y = vote.T.prob, group = gender, color = gender)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump")+ggtitle("With interaction\nwith gender")
+grid.arrange(gender.1,gender.2, nrow = 1)
+```
+
+The immigration attitude doesn't interact with gender. Because the slopes for male and female from the model without interaction with gender do not have difference with the slopes of male and female from the model with interaction with gender. 
+
+
+### Immigration attitude with education level:
+
+```{r, fig.width=6}
+#Immigration attitude with education level:
+immig.educ.1 = glm(vote.T ~ immig.at + educ, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+immig.educ.2 = glm(vote.T ~ immig.at * educ, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+educ.df.2 = expand.grid(immig.at = 0:4, educ = 1:6)
+educ.pred.2 = predict(immig.educ.2, type = "response", newdata =educ.df.2 )
+educ.pred.df.2 = data.frame(educ.df.2, vote.T.prob = as.vector(educ.pred.2))
+educ.2 <- ggplot(educ.pred.df.2, aes(x = immig.at, y = vote.T.prob, group = educ, color = educ)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + labs(color = "education level") + ggtitle("With interaction with\neducation level")
+educ.df.1 = expand.grid(immig.at = 0:4, educ = 1:6)
+educ.pred.1 = predict(immig.educ.1, type = "response", newdata =educ.df.1 )
+educ.pred.df.1 = data.frame(educ.df.1, vote.T.prob = as.vector(educ.pred.1))
+educ.1<- ggplot(educ.pred.df.1, aes(x = immig.at, y = vote.T.prob, group = educ, color = educ)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + labs(color = "education level")+ ggtitle("Without interaction with\neducation level")
+grid.arrange(educ.1,educ.2, nrow = 1)
+```
+
+The immigration attitudes interact with educational level. Because for the model without interaction with education level, each level of education level seems to have similar, almost the same, slope, and when the immigration attitude is the same, higher level of education will have higher probability of voting Donald Trump. In contrast, for the model with interaction with education level, different education level will have different slope, and all of them will intersect when immigration attitude is around 0.7. As the education level will affect the probability of voting Donald Trump differently when there is an interaction between education level and immigration attitude, the interaction with education level should be included in model. 
+
+
+### Immigration attitude with race:
+
+```{r}
+#Immigration attitude with race:
+immig.race.1 = glm(vote.T ~ immig.at + race, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+immig.race.2 = glm(vote.T ~ immig.at * race , family = quasibinomial, weights = commonweight_vv_post, data = obama)
+race.df.2 = expand.grid(immig.at = 0:4, race = factor(c("White","Black","Hispanic","Other")))
+race.pred.2 = predict(immig.race.2, type = "response", newdata =race.df.2 )
+race.pred.df.2 = data.frame(race.df.2, vote.T.prob = as.vector(race.pred.2))
+race.2<- ggplot(race.pred.df.2, aes(x = immig.at, y = vote.T.prob, group = race, color = race)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + ggtitle("With interaction with race")
+race.df.1 = expand.grid(immig.at = 0:4, race = factor(c("White","Black","Hispanic","Other")))
+race.pred.1 = predict(immig.race.1, type = "response", newdata =race.df.1 )
+race.pred.df.1 = data.frame(race.df.1, vote.T.prob = as.vector(race.pred.1))
+race.1 <- ggplot(race.pred.df.1, aes(x = immig.at, y = vote.T.prob, group = race, color = race)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + ggtitle("Without interaction with race")
+grid.arrange(race.1,race.2, nrow = 1)
+```
+
+The immigration attitude interacts with the race. Because in model includes the interaction with race, Hispanic, Other, and White seem to have different slope from  in the model does not include the interaction with race. Thus the interaction between immigration attitude and race should be included.
+
+
+### Immigration attitude with party:
+
+```{r}
+#Immigration attitude with party:
+immig.party.1 = glm(vote.T ~ immig.at + pid7, family = quasibinomial, weights = commonweight_vv_post, data = obama)
+immig.party.2 = glm(vote.T ~ immig.at * pid7 , family = quasibinomial, weights = commonweight_vv_post, data = obama)
+# summary(immig.party.1)
+# summary(immig.party.2)
+party.df.2 = expand.grid(immig.at = 0:4, pid7 = factor(c("Strong Democrat", "Not very strong Democrat", "Lean Democrat", "Strong Republican",  "Not very strong Republican", "Lean Republican",  "Other")))
+party.pred.2 = predict(immig.party.2, type = "response", newdata =party.df.2 )
+party.pred.df.2 = data.frame(party.df.2, vote.T.prob = as.vector(party.pred.2))
+party.2 <- ggplot(party.pred.df.2, aes(x = immig.at, y = vote.T.prob, group = pid7, color = pid7)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + labs(color = "Party")
+party.df.1 = expand.grid(immig.at = 0:4, pid7 = factor(c("Strong Democrat", "Not very strong Democrat", "Lean Democrat", "Strong Republican",  "Not very strong Republican", "Lean Republican",  "Other")))
+party.pred.1 = predict(immig.party.1, type = "response", newdata =party.df.1 )
+party.pred.df.1 = data.frame(party.df.1, vote.T.prob = as.vector(party.pred.1))
+party.1<- ggplot(party.pred.df.1, aes(x = immig.at, y = vote.T.prob, group = pid7, color = pid7)) + geom_line() + xlab("Immigration attitude") + ylab("Probability of voting Donald Trump") + labs(color = "Party") 
+party.1 + ggtitle("Without interaction with party")
+```
+
+```{r}
+party.2 + ggtitle("With interaction with party")
+```
+
+
+The immigration attitude interacts with party.  In the model with interaction with party, Lean Democrat, Lean Republican, Not very strong Republican, and Strong Democrat have different slope from in the model without interaction with party. Thus the interaction between immigration attitude and party should be included.
+
+# Step 3:
+
+The coefficients from the model without immigration attitude:
+
+```{r}
+library(arm)
+model1 <- glm(vote.T ~ race + pid7 + educ , family = 'binomial', data = obama, weights = commonweight_vv_post)
+display(model1)
+```
+
+
+The coefficients from the model with immigration attitude:
+
+```{r}
+model2 <- glm(vote.T ~ immig.at + race + pid7 + educ + gender + immig.at:race + immig.at:educ + immig.at:pid7, family = 'binomial', data = obama, weights = commonweight_vv_post)
+display(model2)
+```
+
+```{r}
+#1. With immigration attidue:
+
+with.img = expand.grid(immig.at = 0:4, pid7 = factor(c("Strong Democrat", "Not very strong Democrat", "Lean Democrat", "Strong Republican",  "Not very strong Republican", "Lean Republican",  "Other")), race = factor(c("White","Black","Hispanic","Other")), educ = 1:6, gender = factor(c("Male","Female")))
+with.img.pred = predict(model2, type = "response", newdata = with.img )
+with.img.pred.df = data.frame(with.img, vote.T.prob = as.vector(with.img.pred))
+
+#2. Without immigration attitude:
+
+wout.img = expand.grid(pid7 = factor(c("Strong Democrat", "Not very strong Democrat", "Lean Democrat", "Strong Republican",  "Not very strong Republican", "Lean Republican",  "Other")), race = factor(c("White","Black","Hispanic","Other")), educ = 1:6, gender = factor(c("Male","Female")))
+wout.img.pred = predict(model1, type = "response", newdata = wout.img)
+wout.img.pred.df = data.frame(wout.img, vote.T.prob = as.vector(wout.img.pred))
+```
+
+## Graphic comparison:
+
+### Gender:
+```{r}
+gender.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = gender)) + geom_boxplot() + ggtitle("With immigration\nattitude") + ylab("Probability of voting to Donald Trump")
+gender.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = gender)) + geom_boxplot() + ggtitle("Without immigration\nattitude") + ylab("Probability of voting to Donald Trump")
+grid.arrange(gender.with, gender.wout, nrow = 1)
+```
+
+The immigration attitude does make some difference when talking about gender. From the plot with immigration attitude, male has a higher probability of voting to Trump than female, and the probability for male is so close to 0.25. However, in the plot without immigration attitude, male and female seem to have the same probability of voting to Donald Trump, and the probability for male without immigration attitude is slightly lower than the probability with immigration attitude.
+
+### Race:
+```{r}
+race.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = race)) + geom_boxplot() + ggtitle("With immigration\nattitude") + ylab("Probability of voting to Donald Trump")
+race.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = race)) + geom_boxplot() + ggtitle("Without immigration\nattitude") + ylab("Probability of voting to Donald Trump")
+grid.arrange(race.with, race.wout, nrow = 1)
+```
+
+The immigration attitude does not make a substantive difference when talking about race. It seems like the probability of voting to Donald trump for four different races doesn't change a lot.
+
+### Education level:
+```{r}
+educ.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = educ, group = educ, color = educ)) + geom_boxplot() + ggtitle("With immigration\nattitude") + ylab("Probability of voting to Donald Trump")
+educ.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = educ, group = educ, color = educ)) + geom_boxplot() + ggtitle("Without immigration\nattitude") + ylab("Probability of voting to Donald Trump")
+grid.arrange(educ.with, educ.wout, nrow = 1)
+```
+
+For education, the plot with immigration attitude converges than the one without immigration attitude. The plot with immigration attitude has higher range of probability of voting to Trump compared to the one without. 
+
+### Party:
+```{r}
+party.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = pid7)) + geom_boxplot() + ggtitle("With immigration\nattitude") + ylab("Probability of voting to Donald Trump") + xlab("party")+ theme(axis.text.x=element_blank())
+party.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = pid7)) + geom_boxplot() + ggtitle("Without immigration\nattitude") + ylab("Probability of voting to Donald Trump") + xlab("party") + theme(axis.text.x=element_blank())
+grid.arrange(party.with, party.wout, nrow = 1)
+```
+
+From the plot, we could see that the immigration attitude does make a substantive difference when talking about party. The median for probability of voting to Donald Trump may not change drastically when taking the immigration attitude into consideration but the range for the probabilities in all seven parties expand a lot.
+
+Overall, including immigration attitudes make a substantive difference in demographic groups: gender, education level, and party. For these three demographic groups, immigration attitude seems to have the same level of effect on them.
+
+
+# Conclusion:
+
+The attitudes toward immigration explain the probability of switching of votes of 2012 Obama supporters who became 2016 Trump supporters within the demographic groups: gender, education level, and party. 
