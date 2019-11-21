@@ -203,21 +203,37 @@ wout.img.pred.df = data.frame(wout.img, vote.T.prob = as.vector(wout.img.pred))
 gender.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = gender)) + geom_boxplot() + ggtitle("With immigration attitude") + ylab("Probability of voting to Donald Trump")
 gender.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = gender)) + geom_boxplot() + ggtitle("Without immigration attitude") + ylab("Probability of voting to Donald Trump")
 grid.arrange(gender.with, gender.wout, nrow = 1)
+```
 
+The immigration attitude does make some difference when talking about gender. From the plot with immigration attitude, male has a higher probability of voting to Trump than female, and the probability for male is so close to 0.25. However, in the plot without immigration attitude, male and female seem to have the same probability of voting to Donald Trump, and the probability for male without immigration attitude is slightly lower than the probability with immigration attitude.
+
+
+```{r}
 race.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = race)) + geom_boxplot() + ggtitle("With immigration attitude") + ylab("Probability of voting to Donald Trump")
 race.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = race)) + geom_boxplot() + ggtitle("Without immigration attitude") + ylab("Probability of voting to Donald Trump")
 grid.arrange(race.with, race.wout, nrow = 1)
+```
 
+The immigration attitude does not make a substantive difference when talking about race. It seems like the probability of voting to Donald trump for four different races doesn't change a lot.
+
+
+```{r}
 educ.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = educ, group = educ, color = educ)) + geom_boxplot() + ggtitle("With immigration attitude") + ylab("Probability of voting to Donald Trump")
 educ.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = educ, group = educ, color = educ)) + geom_boxplot() + ggtitle("Without immigration attitude") + ylab("Probability of voting to Donald Trump")
 grid.arrange(educ.with, educ.wout, nrow = 1)
+```
 
+For education, the plot with immigration attitude converges than the one without immigration attitude. The plot with immigration attitude has higher range of probability of voting to Trump compared to the one without. 
+
+```{r}
 party.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = pid7)) + geom_boxplot() + ggtitle("With immigration attitude") + ylab("Probability of voting to Donald Trump")
 party.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = pid7)) + geom_boxplot() + ggtitle("Without immigration attitude") + ylab("Probability of voting to Donald Trump")
 grid.arrange(party.with, party.wout, nrow = 1)
 ```
 
-The immigration attitude does make some difference when talking about gender. From the plot with immigration attitude, male has higher probability of voting to Trump, while we can not see this gender gap in the plot without immigration attitude. The immigration attitude does not make a substantive difference when talking about race. For education, the plot with immigration attitude converges than the one without immigration attitude. The plot with immigration attitude has higher range of probability of voting to Trump compared to the one without. Gender and education matter much than other two groups.
+From the plot, we could see that the immigration attitude does make a substantive difference when talking about party. The median for probability of voting to Donald Trump may not change drastically when taking the immigration attitude into consideration but the range for the probabilities in all seven parties expand a lot.\n
+
+In conclusion, gender, education and party matter much than race.
 
 
 
@@ -228,7 +244,7 @@ The immigration attitude does make some difference when talking about gender. Fr
 # predict(model2.1, newdata = group1, type = "response")
 # 
 # group2 <- data.frame(race2 = 3, pid72 = 1, educ2 = 6, gender2 = 2, immig.at = 4) 
-# hispanicï¼Œ strong democratï¼Œ Post-gradï¼Œ female 
+# hispanicï¼? strong democratï¼? Post-gradï¼? female 
 # predict(model1, newdata = group2, type = "response")
 # predict(model2, newdata = group2, type = "response")
 # predict(model2.1, newdata = group2, type = "response")
