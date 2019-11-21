@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 5)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 6)
 load("CCES16_Common_OUTPUT_Feb2018_VV.RData")
 library(gapminder)
 library(dplyr)
@@ -109,7 +109,7 @@ The immigration attitude doesn't interact with gender. Because the slopes for ma
 
 ### Immigration attitude with education level:
 
-```{r, fig.width=6}
+```{r, fig.width=7}
 #Immigration attitude with education level:
 immig.educ.1 = glm(vote.T ~ immig.at + educ, family = quasibinomial, weights = commonweight_vv_post, data = obama)
 immig.educ.2 = glm(vote.T ~ immig.at * educ, family = quasibinomial, weights = commonweight_vv_post, data = obama)
@@ -208,38 +208,43 @@ wout.img.pred.df = data.frame(wout.img, vote.T.prob = as.vector(wout.img.pred))
 ## Graphic comparison:
 
 ### Gender:
-```{r}
-gender.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = gender)) + geom_boxplot() + ggtitle("With immigration\nattitude") + ylab("Probability of voting to Donald Trump")
-gender.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = gender)) + geom_boxplot() + ggtitle("Without immigration\nattitude") + ylab("Probability of voting to Donald Trump")
-grid.arrange(gender.with, gender.wout, nrow = 1)
+
+```{r,fig.width=7}
+g.1<-ggplot(data = with.img.pred.df, aes(x = vote.T.prob, group = gender, color = gender)) + geom_density() + ggtitle("With immigration\nattitude") + ylab("Density") + xlab("Probability of voting\nto Donald Trump") + ylim(0,2.5)
+g.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = gender, color = gender)) + geom_density() + ggtitle("Without immigration\nattitude") + ylab("Density")+ xlab("Probability of voting\nto Donald Trump")+ ylim(0,2.5)
+grid.arrange(g.1,g.2,nrow = 1)
 ```
 
 The immigration attitude does make some difference when talking about gender. From the plot with immigration attitude, male has a higher probability of voting to Trump than female, and the probability for male is so close to 0.25. However, in the plot without immigration attitude, male and female seem to have the same probability of voting to Donald Trump, and the probability for male without immigration attitude is slightly lower than the probability with immigration attitude.
 
 ### Race:
-```{r}
-race.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = race)) + geom_boxplot() + ggtitle("With immigration\nattitude") + ylab("Probability of voting to Donald Trump")
-race.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = race)) + geom_boxplot() + ggtitle("Without immigration\nattitude") + ylab("Probability of voting to Donald Trump")
-grid.arrange(race.with, race.wout, nrow = 1)
+
+```{r,fig.width=7}
+r.1<-ggplot(data = with.img.pred.df, aes(x = vote.T.prob, group = race, color = race)) + geom_density() + ggtitle("With immigration\nattitude") + ylab("Density") + xlab("Probability of voting\nto Donald Trump") + ylim(0,3)
+r.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = race, color = race)) + geom_density() + ggtitle("Without immigration\nattitude") + ylab("Density")+ xlab("Probability of voting\nto Donald Trump") + ylim(0,3)
+grid.arrange(r.1, r.2, nrow = 1)
 ```
 
 The immigration attitude does not make a substantive difference when talking about race. It seems like the probability of voting to Donald trump for four different races doesn't change a lot.
 
 ### Education level:
-```{r}
-educ.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = educ, group = educ, color = educ)) + geom_boxplot() + ggtitle("With immigration\nattitude") + ylab("Probability of voting to Donald Trump")
-educ.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = educ, group = educ, color = educ)) + geom_boxplot() + ggtitle("Without immigration\nattitude") + ylab("Probability of voting to Donald Trump")
-grid.arrange(educ.with, educ.wout, nrow = 1)
+
+```{r,fig.width=7}
+e.1<- ggplot(data = with.img.pred.df, aes(x = vote.T.prob, group = educ, color = educ)) + geom_density() + ggtitle("With immigration\nattitude") + ylab("Density") + xlab("Probability of voting\nto Donald Trump")+ ylim(0,2.5)
+e.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = educ, color = educ)) + geom_density() + ggtitle("Without immigration\nattitude") + ylab("Density")+ xlab("Probability of voting\nto Donald Trump")+ ylim(0,2.5)
+grid.arrange(e.1,e.2, nrow =1)
 ```
 
 For education, the plot with immigration attitude converges than the one without immigration attitude. The plot with immigration attitude has higher range of probability of voting to Trump compared to the one without. 
 
 ### Party:
-```{r}
-party.with <- ggplot(data = with.img.pred.df, aes(y = vote.T.prob, x = pid7)) + geom_boxplot() + ggtitle("With immigration\nattitude") + ylab("Probability of voting to Donald Trump") + xlab("party")+ theme(axis.text.x=element_blank())
-party.wout <- ggplot(data = wout.img.pred.df, aes(y = vote.T.prob, x = pid7)) + geom_boxplot() + ggtitle("Without immigration\nattitude") + ylab("Probability of voting to Donald Trump") + xlab("party") + theme(axis.text.x=element_blank())
-grid.arrange(party.with, party.wout, nrow = 1)
+
+```{r,fig.width=7}
+p.1<- ggplot(data = with.img.pred.df, aes(x = vote.T.prob, group = pid7, color = pid7)) + geom_density() + ggtitle("With immigration\nattitude") + ylab("Density") + xlab("Probability of voting\nto Donald Trump") + ylim(0,35)
+p.2<- ggplot(data = wout.img.pred.df, aes(x = vote.T.prob, group = pid7, color = pid7)) + geom_density() + ggtitle("Without immigration\nattitude") + ylab("Density")+ xlab("Probability of voting\nto Donald Trump")+ ylim(0,35)
+grid.arrange(p.1, p.2, nrow = 1)
 ```
+
 
 From the plot, we could see that the immigration attitude does make a substantive difference when talking about party. The median for probability of voting to Donald Trump may not change drastically when taking the immigration attitude into consideration but the range for the probabilities in all seven parties expand a lot.
 
